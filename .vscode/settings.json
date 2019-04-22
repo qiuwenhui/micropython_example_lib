@@ -1,0 +1,27 @@
+{
+    "autoHeader": {
+        "format": {
+            "startWith": "/**",
+            "middleWith": "*",
+            "endWith": "*/",
+            "headerPrefix": "@",
+        },
+        "header": {
+            "Author": "qiuwenhui",
+            "Create Time": {
+                "type": "createTime",
+                "format": "YYYY-MM-DD HH:mm:ss",
+            },
+            "Modified by": {
+                "type": "modifier",
+                "value": "qiuwenhui",
+            },
+            "Modified time": {
+                "type": "modifyTime",
+                "format": "YYYY-MM-DD HH:mm:ss"
+            },
+            "代码描述": "",
+            
+        }
+    }
+}
