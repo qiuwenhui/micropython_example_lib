@@ -61,6 +61,50 @@ while True:
 
 ## 文件的创建和读取
 
+ESP8266上的MicroPython支持使用内置`open()`函数在Python中访问文件的标准方法。
+
+```python
+>>> f = open('data.txt', 'w')
+>>> f.write('some data')
+9#写入字节数
+>>> f.close()
+```
+
+回读这个新文件的内容
+
+```python
+>>> f = open('data.txt')
+>>> f.read()
+'some data'
+>>> f.close()
+```
+
+> 打开文件时的默认模式是以只读模式打开它，并将其作为文本文件打开。
+>
+> 指定`'wb'`作为第二个参数`open()`打开以便以二进制模式写入，并`'rb'`打开以便以二进制模式读取。
+
+### micropython_fwrite.py
+
+```python
+f=open('data.txt','wb')#打开文件，如果没有就创建一个
+f.write('some data')#写入文件内容
+f.close()#关闭文件
+#将文件添加到文件末尾
+f=open('data.txt','a')
+f.write("hello world")
+f.close()
+```
+
+### micropython_fread.py
+
+```python
+filename="data.txt"#文件名
+f=open(filename,'r')
+len=f.read()
+print(len)
+f.close()
+```
+
 
 
 ## 网络协议的各种项目开发
