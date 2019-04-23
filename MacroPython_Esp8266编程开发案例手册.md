@@ -105,6 +105,51 @@ print(len)
 f.close()
 ```
 
+### filedelete.py
+
+```python
+import os
+def delete(filename):
+    print(os.remove(filename))
+```
+
+## 串口通讯
+
+无法同时使用REPL进行交互
+
+必须提前分离REPL
+
+<https://github.com/micropython/micropython/commit/afd0701bf7a9dcb50c5ab46b0ae88b303fec6ed3>
+
+<https://github.com/micropython/micropython/pull/3784>
+
+补丁-->boot.py
+
+```python
+import uos, machine
+uart = machine.UART(0, 115200)
+uos.dupterm(uart, 1)
+```
+
+分离代码
+
+```python
+uos.dupterm(None, 1)
+```
+
+
+
+### micropythonuart.py
+
+```python
+import machine
+u0=machine.UART(0,115200)#定义串口
+a=u0.write("hello from micropython \n")#输出字符串
+a=123456
+a=u0.write(str(a))#数字转字符串输出
+
+```
+
 
 
 ## 网络协议的各种项目开发
@@ -116,6 +161,4 @@ UDP
 MQTT
 
 SOCKET
-
-## 串口通讯
 
