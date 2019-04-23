@@ -305,6 +305,7 @@ print("wifi connect souccess network config:"+str(sta_if.ifconfig()))#连接信�
 print("connect ssid  is :"+str(sta_if.config('essid')))
 print("mac is:"+str(sta_if.config('mac')))
 #print("channel is :"+tr('channel')) #只适合AP 模式
+
 ```
 
 
