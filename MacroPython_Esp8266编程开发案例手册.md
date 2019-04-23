@@ -1,5 +1,11 @@
 # MacroPython_Esp8266编程开发手册
 
+案例参考
+
+<http://wiki.micropython.org/Home>
+
+<https://github.com/dhylands/upy-examples>
+
 ## GPIO控制
 
 引脚分布
@@ -115,14 +121,6 @@ def delete(filename):
 
 ## 串口通讯
 
-无法同时使用REPL进行交互
-
-必须提前分离REPL
-
-<https://github.com/micropython/micropython/commit/afd0701bf7a9dcb50c5ab46b0ae88b303fec6ed3>
-
-<https://github.com/micropython/micropython/pull/3784>
-
 补丁-->boot.py
 
 ```python
@@ -137,8 +135,6 @@ uos.dupterm(uart, 1)
 uos.dupterm(None, 1)
 ```
 
-
-
 ### micropythonuart.py
 
 ```python
@@ -147,7 +143,35 @@ u0=machine.UART(0,115200)#定义串口
 a=u0.write("hello from micropython \n")#输出字符串
 a=123456
 a=u0.write(str(a))#数字转字符串输出
+```
 
+### uartread.py
+
+```python
+import machine
+from machine import Pin
+from time import sleep
+
+led=Pin(2,Pin.OUT)
+
+import uos
+uos.dupterm(None, 1)#把串口0 从repl分离出来
+
+
+uart=machine.UART(0,115200)
+uart.init(115200, bits=8, parity=None, stop=1) # init with given parameters
+
+uart.write("read uart data \n")
+
+
+while True:
+  led.value(not led.value())#led 反转
+  sleep(0.5)
+  if uart.any():#查询串口有没有数据
+    rdata=uart.read()#读取数据
+    uart.write(rdata)#打印出数据
+  else:
+    uart.write("There is no data \n")
 ```
 
 
