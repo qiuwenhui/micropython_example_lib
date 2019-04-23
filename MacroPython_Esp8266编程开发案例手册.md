@@ -305,18 +305,21 @@ print("wifi connect souccess network config:"+str(sta_if.ifconfig()))#连接信�
 print("connect ssid  is :"+str(sta_if.config('essid')))
 print("mac is:"+str(sta_if.config('mac')))
 #print("channel is :"+tr('channel')) #只适合AP 模式
-
+sta_if.disconnected()#断开连接
+sta_if.activet(FLASH)
 ```
 
+### Micropython网络编程Scoket
+
+旦设置了WiFi，就可以使用套接字来访问网络。套接字表示网络设备上的端点，当两个套接字连接在一起时，可以继续进行通信。<font color="red">Internet协议构建在套接字</font>之上，例如电子邮件（SMTP），Web（HTTP），telnet，ssh等等。为这些协议中的每一个分配一个特定的端口，它只是一个整数。给定IP地址和端口号，您可以连接到远程设备并开始与之通信。
+
+<http://docs.micropython.org/en/latest/esp8266/tutorial/network_basics.html>
+
+<http://wiki.micropython.org/Home>
 
 
-### 网络协议的各种项目开发
 
 ### HTTP 
-
-#### web server
-
-
 
 TCP
 
