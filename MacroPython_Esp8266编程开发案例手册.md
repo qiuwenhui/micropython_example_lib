@@ -351,6 +351,34 @@ s.close()
 
 #### HTTP GET 请求
 
+##### http_get.py
+
+```python
+import network
+import usocket as socket
+def http_get(url):
+    _, _, host, path = url.split('/', 3)#分析地址信息路径 获得地址
+    addr = socket.getaddrinfo(host, 80)[0][-1]
+    s = socket.socket()
+    s.connect(addr)
+    s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))#插入路径和主机
+    while True:
+        data = s.recv(100)#获得100个字符
+        if data:
+            print(str(data, 'utf8'), end='')
+        else:
+            break
+    s.close()
+```
+
+htpp
+
+
+
+
+
+
+
 
 
 TCP
@@ -358,6 +386,4 @@ TCP
 UDP 
 
 MQTT
-
-SOCKET
 
