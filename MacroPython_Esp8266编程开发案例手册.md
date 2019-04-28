@@ -311,15 +311,47 @@ sta_if.activet(FLASH)
 
 ### Micropython网络编程Scoket
 
-旦设置了WiFi，就可以使用套接字来访问网络。套接字表示网络设备上的端点，当两个套接字连接在一起时，可以继续进行通信。<font color="red">Internet协议构建在套接字</font>之上，例如电子邮件（SMTP），Web（HTTP），telnet，ssh等等。为这些协议中的每一个分配一个特定的端口，它只是一个整数。给定IP地址和端口号，您可以连接到远程设备并开始与之通信。
+一但设置了WiFi，就可以使用套接字来访问网络。套接字表示网络设备上的端点，当两个套接字连接在一起时，可以继续进行通信。<font color="red">Internet协议构建在套接字</font>之上，例如电子邮件（SMTP），Web（HTTP），telnet，ssh等等。为这些协议中的每一个分配一个特定的端口，它只是一个整数。给定IP地址和端口号，您可以连接到远程设备并开始与之通信。
 
 <http://docs.micropython.org/en/latest/esp8266/tutorial/network_basics.html>
 
 <http://wiki.micropython.org/Home>
 
+#### showip2connet2ip.py
+
+```python
+# connect/ show IP config a specific network interface
+# see below for examples of specific drivers
+import network
+import utime
+
+# enable station interface and connect to WiFi access point
+nic = network.WLAN(network.STA_IF)
+nic.active(True)
+nic.connect('ChangyanAiedu', 'iFlytek1234')
+# now use sockets as usual
+
+if not nic.isconnected():#是否连接
+    nic.connect()
+    print("Waiting for connection...")#输出等待连接
+    while not nic.isconnected():
+        utime.sleep(1)#休眠1秒
+print(nic.ifconfig())
+
+# now use usocket as usual
+import usocket as socket
+addr = socket.getaddrinfo('micropython.org', 80)[0][-1]#地址信息
+
+s = socket.socket()
+s.connect(addr)
+s.send(b'GET / HTTP/1.1\r\nHost: micropython.org\r\n\r\n')
+data = s.recv(1000)#获取1000个byte
+s.close()
+```
+
+#### HTTP GET 请求
 
 
-### HTTP 
 
 TCP
 
