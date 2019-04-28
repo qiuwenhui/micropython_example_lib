@@ -371,13 +371,211 @@ def http_get(url):
     s.close()
 ```
 
-htpp
+##### http_server_pinsetae.py
+
+```python
+#显示引脚状态服务器
+#创建一个简单的HTTP服务器，该服务器为单个网页提供一个包含所有GPIO引脚状态的表
+import machine
+pins = [machine.Pin(i, machine.Pin.IN) for i in (0, 2, 4, 5, 12, 13, 14, 15)]#定义引脚
+
+#html 标记文本 code
+html="""<!DOCTYPE html>
+<html>
+<head> <title>ESP8266 Pins</title> 
+<style type="text/css">
+@media (max-width : 1080px ){
+}
+</style>
+    </head>
+    <body>
+	<div style="width: auto; margin-left: auto; margin-right: auto;" clase="one">
+		<h1 style="margin-left: auto; margin-right: auto; text-align: center;">ESP8266 Pins</h1>
+        <table width="1000px" border="1" style="margin-left: auto; margin-right: auto;"> <tr><th>Pin</th><th>Value</th></tr> %s </table>
+		</div>
+</body>
+</html>
+"""
+
+import socket
+addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]#获得地址信息
+
+s = socket.socket()#socket 创建
+s.bind(addr)#bind 定address
+s.listen(1) #限制连接个数
+
+print('listening on', addr)
+
+while True:
+    cl, addr = s.accept()
+    print('client connected from', addr)
+    cl_file = cl.makefile('rwb', 0)
+    while True:
+        line = cl_file.readline()
+        if not line or line == b'\r\n':
+            break
+    rows = ['<tr><td>%s</td><td>%d</td></tr>' % (str(p), p.value()) for p in pins]
+    response = html % '\n'.join(rows)
+    cl.send(response)
+    cl.close()
+```
+
+##### set_led_httpserver.py
+
+```python
+import socket
+import machine
 
 
+#HTML to send to browsers
+html = """<!DOCTYPE html>
+<html>
+<head> <title>ESP8266 LED ON/OFF</title> </head>
+<h2>LED's on and off with Micropython</h2></center>
+<h3>(ESP8266 HUZZAH Feather)</h3></center>
+<form>
+LED RED&nbsp;&nbsp;:
+<button name="LED" value="ON_RED" type="submit">LED ON</button>
+<button name="LED" value="OFF_RED" type="submit">LED OFF</button><br><br>
+LED BLUE:
+<button name="LED" value="ON_BLUE" type="submit">LED ON</button>
+<button name="LED" value="OFF_BLUE" type="submit">LED OFF</button><br><br>
+LED Extern:
+<button name="LED" value="ON_EX" type="submit">LED ON</button>
+<button name="LED" value="OFF_EX" type="submit">LED OFF</button>
+</form>
+</html>
+"""
+
+#Setup PINS
+LED_RED = machine.Pin(0, machine.Pin.OUT)
+LED_BLUE = machine.Pin(2, machine.Pin.OUT)
+LED_EX = machine.Pin(12, machine.Pin.OUT)
+
+#Setup Socket WebServer
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(('', 80))
+s.listen(5)#5个连接
+
+while True:
+
+    conn, addr = s.accept() 
+    #套接字必须绑定到一个地址并侦听连接。返回值是一对（conn，address）
+    #其中conn是可用于在连接上发送和接收数据的新套接字对象，address是绑定到连接另一端的套接字的地址。
+    print("Got a connection from %s" % str(addr))#输出连接的地址
+    request = conn.recv(1024)#接受数据
+    print("Content = %s" % str(request))#输出接受的数据
+    request = str(request)#数据转换成字符串
+    
+    LEDON_RED = request.find('/?LED=ON_RED')
+    LEDOFF_RED = request.find('/?LED=OFF_RED')
+    LEDON_BLUE = request.find('/?LED=ON_BLUE')
+    LEDOFF_BLUE = request.find('/?LED=OFF_BLUE')
+    LEDON_EX = request.find('/?LED=ON_EX')
+    LEDOFF_EX = request.find('/?LED=OFF_EX')    
+
+    if LEDON_RED == 6:
+        print('TURN LED0 ON')
+        LED_RED.off()
+    if LEDOFF_RED == 6:
+        print('TURN LED0 OFF')
+        LED_RED.on()
+    if LEDON_BLUE == 6:
+        print('TURN LED2 ON')
+        LED_BLUE.off()
+    if LEDOFF_BLUE == 6:
+        print('TURN LED2 OFF')
+        LED_BLUE.on()
+    if LEDON_EX == 6:
+        print('TURN LED2 ON')
+        LED_EX.on()
+    if LEDOFF_EX == 6:
+        print('TURN LED2 OFF')
+        LED_EX.off() 
+        
+    response = html#发送
+    conn.send(response)#发送html数据
+    conn.close()#关闭此次连接
+
+```
+
+webserverset_pin.py
+
+```python
+# Complete project details at https://RandomNerdTutorials.com
+# 远程设置led 开关
+try:
+  import usocket as socket
+except:
+  import socket
+
+from machine import Pin
+import network
+
+import esp
+esp.osdebug(None)
+
+import gc
+gc.collect()
+
+ssid = 'ChangyanAiedu'
+password = 'iFlytek1234'
+
+station = network.WLAN(network.STA_IF)
+
+station.active(True)
+station.connect(ssid, password)
+
+while station.isconnected() == False:
+  pass
+
+print('Connection successful')
+print(station.ifconfig())
+
+led = Pin(2, Pin.OUT)
+
+def web_page():
+  if led.value() == 1:
+    gpio_state="O0F"
+  else:
+    gpio_state="ON"
+  
+  html = """<html><head> <title>ESP Web Server</title> <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,"> <style>html{font-family: Helvetica; display:inline-block; margin: 0px auto; text-align: center;}
+  h1{color: #0F3376; padding: 2vh;}p{font-size: 1.5rem;}.button{display: inline-block; background-color: #e7bd3b; border: none; 
+  border-radius: 4px; color: white; padding: 16px 40px; text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}
+  .button2{background-color: #4286f4;}</style></head><body> <h1>ESP Web Server</h1> 
+  <p>GPIO state: <strong>""" + gpio_state + """</strong></p><p><a href="/?led=on"><button class="button">ON</button></a></p>
+  <p><a href="/?led=off"><button class="button button2">OFF</button></a></p></body></html>"""
+  return html
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)#ap 和sta模式
+s.bind(('', 80))#绑定地址
+s.listen(205)#最多5个连接
+
+while True:
+  conn, addr = s.accept()
+  print('Got a connection from %s' % str(addr))
+  request = conn.recv(1024)
+  request = str(request)
+  #print('Content = %s' % request)
+  led_on = request.find('/?led=on')
+  led_off = request.find('/?led=off')
+  if led_on == 6:
+    print('LED ON')
+    led.value(0)
+  if led_off == 6:
+    print('LED OFF')
+    led.value(1)
+  response = web_page()
+  conn.send('HTTP/1.1 200 OK\n')
+  conn.send('Content-Type: text/html\n')
+  conn.send('Connection: close\n\n')
+  conn.sendall(response)
+  conn.close()
 
 
-
-
+```
 
 
 
