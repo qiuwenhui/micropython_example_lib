@@ -804,7 +804,7 @@ except :
 tcp_client.close()
 ```
 
-#### MQTT协议通信
+### MQTT协议通信
 
 ##### 测试服务器
 
@@ -1388,3 +1388,57 @@ def main(server=SERVER):
     c.disconnect()
 ```
 
+#### CloudMQTT 
+
+参考：
+
+[https://www.cloudmqtt.com](https://www.cloudmqtt.com/)
+
+账号
+
+GITHUB账号
+
+软件：<https://github.com/CloudMQTT>
+
+##### 客户端
+
+cloudmqtt.py
+
+```python
+#https://www.cloudmqtt.com
+#umqtt.simple
+import time
+from umqtt.simple import MQTTClient
+
+# Publish test messages e.g. with:
+# mosquitto_pub -t foo_topic -m hello
+
+# Received messages from subscriptions will be delivered to this callback
+def sub_cb(topic, msg):
+    print((topic, msg))
+
+port=12519
+user="bnjxtnyp"
+passw="2g8dIx_cHIM2"
+def main(server="m24.cloudmqtt.com"):
+    c = MQTTClient("umqtt_client", server,port,user,passw)
+    c.set_callback(sub_cb)
+    c.connect()
+    c.subscribe(b"$SYS/broker/load/connections/+")
+    while True:
+        if True:
+            # Blocking wait for message
+            c.wait_msg()
+        else:
+            # Non-blocking wait for message
+            c.check_msg()
+            # Then need to sleep to avoid 100% CPU usage (in a real
+            # app other useful actions would be performed instead)
+            time.sleep(1)
+
+    c.disconnect()
+
+if __name__ == "__main__":
+    main()
+
+```
