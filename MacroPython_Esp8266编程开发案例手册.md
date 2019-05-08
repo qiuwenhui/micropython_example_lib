@@ -459,7 +459,7 @@ s.listen(5)#5个连接
 
 while True:
 
-    conn, addr = s.accept() 
+    conn, addr = s.accept() #TCP 模式
     #套接字必须绑定到一个地址并侦听连接。返回值是一对（conn，address）
     #其中conn是可用于在连接上发送和接收数据的新套接字对象，address是绑定到连接另一端的套接字的地址。
     print("Got a connection from %s" % str(addr))#输出连接的地址
@@ -554,7 +554,7 @@ s.bind(('', 80))#绑定地址
 s.listen(205)#最多5个连接
 
 while True:
-  conn, addr = s.accept()
+  conn, addr = s.accept()#s 被connt sockt 连接
   print('Got a connection from %s' % str(addr))
   request = conn.recv(1024)
   request = str(request)
@@ -577,11 +577,235 @@ while True:
 
 ```
 
+http_send_recv.py
+
+```python
+#http server send  recv data http 收发数据
+#http 接收 发送数据到浏览器
+import socket
+import math
+import os
+from machine import Pin
+led = Pin(2, Pin.OUT)
+
+def web_page(gpio_state):
+  html1 = """
+  <html><head>
+<meta charset="utf-8">
+<title>http收发数据</title>
+	<style>
+	html{
+    font-family: Helvetica;
+    display: inline-block;
+    margin: 0px auto;
+    text-align: left;
+    line-height: 31px;
+    width: 200px;
+    height: 80px;
+}
+  h1{color: #0F3376; padding: 2vh;}
+	</style>
+</head>
+
+<body style="text-align: center">
+	<h1>http 数据收发 </h1>
+<!--<p>收到的数据:</p>-->
+	<p>收到的数据
+<textarea name="textarea" style="width: 180px; height: 150px;">"""+gpio_state+"""</textarea></p>
+	<form action="form_action.asp" method="get">
+    <p>发数据： <input type="text" name="inputdata" /><input type="submit" value="Submit" /></p>	
+</form>
+</body></html>
+  """
+  return html1
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)#ap 和sta模式
+s.bind(('', 80))#绑定地址
+s.listen(205)#最多5个连接
+
+while True:
+  conn, addr = s.accept()
+  print('Got a connection from %s' % str(addr))
+  request = conn.recv(1024)
+  request = str(request)
+  print('Content = %s' % request)
+  i=-1
+  i= request.find('inputdata=')+10
+  strdata=""
+  a=request[i]
+  if i != -1 :
+    while True:
+      if a == '\\':
+        break
+      strdata=strdata+str(a)
+      
+      i=i+1
+      
+      
+      a=request[i]
+  
+  print(strdata)
+  response = web_page(strdata)
+  #提取字符串 inputdata=？？\r\n
+  
+  #conn.send('HTTP/1.1 200 OK\n')
+  #conn.send('Content-Type: text/html\n')
+  #conn.send('Connection: close\n\n')
+  conn.sendall(response)
+  conn.close()
+
+```
+
+#### UDP 通信
+
+```python
+#micropython UDP 
+import socket
+
+#创建 socket 套字节
+s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+port=10086
+s.bind(('',port)) #绑定端口binding the port
+print('waiting...')
+
+while True:   #接收数据receiving data
+  data,addr=s.recvfrom(1024)#_ _=socket.recvfrom(bufsize)  接受最大1024个数据 返回 data 和 地址信息
+  s.sendto('heello from micropython',addr)#将信息发送到目的地址addr=('192.168.31.28',1024)
+ print('received:',data,'from',addr)
+```
+
+python UDP
+
+```python
+    #python 3.7
+import socket
+    
+UDP_IP = "192.168.31.119"
+UDP_PORT = 10086
+MESSAGE = "Hello, World!"
+    
+print ("UDP target IP:", UDP_IP)
+print ("UDP target port:", UDP_PORT)
+print ("message:", MESSAGE)
+   
+sock = socket.socket(socket.AF_INET, # Internet
+                        socket.SOCK_DGRAM) # UDP
+sock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
+
+```
+
+```python
+from socket import *
+ 
+host = '192.168.31.119' # 这是客户端的电脑的ip
+port = 10086 #接口选择大于10000的，避免冲突
+bufsize = 1024 #定义缓冲大小
+ 
+addr = (host,port) # 元祖形式
+udpClient = socket(AF_INET,SOCK_DGRAM) #创建客户端
+ 
+while True:
+  data = input('>>> ')
+  if not data:
+    break
+  data = data.encode(encoding="utf-8") 
+  udpClient.sendto(data,addr) # 发送数据
+  data,addr = udpClient.recvfrom(bufsize) #接收数据和返回地址
+  print(data.decode(encoding="utf-8"),'from',addr)
+ 
+udpClient.close()
+```
+
+#### TCP通信
+
+服务端
+
+```python
+#micropython tcp client server 
+#for esp8266
+#http server send  recv data http 收发数据
+import socket
+import math
+import os
+from machine import Pin
+led = Pin(2, Pin.OUT)
+
+sta_if = network.WLAN(network.STA_IF)
+if not sta_if.active():
+  sta_if.active(True)
+
+#连接网络
+ssid_='ChangyanAiedu'
+password_='iFlytek1234'
+
+if not sta_if.isconnected():#如果没有连接
+  print('connecting to network...')
+  sta_if.connect(ssid_,password_)#连接到指定特定网洛
+  print("s")
+  #while not sta_if.isconnected():
+  #print("wifi connect souccess network config:"+str(sta_if.ifconfig()))
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)#ap 和sta模式
+s.bind(('',8080))#绑定地址
+s.listen(5)#最多5个连接
+conn, addr = s.accept()
+print('Got a connection from %s' % str(addr))
+
+while True:
+  request = conn.recv(1024)
+  request = str(request,'utf-8')
+  print(request)
+  response = "hello world"
+  conn.sendall(response)
+  #conn.close()#连接关闭
+
+```
+
+客户端
+
+参考：<https://randomnerdtutorials.com/how-to-make-two-esp8266-talk/>
+
+```python
+try:
+    import usocket as socket
+except:
+    import socket
+
+import time
+sta_if = network.WLAN(network.STA_IF)
+if not sta_if.active():
+  sta_if.active(True)
+
+#连接网络
+ssid_='ChangyanAiedu'
+password_='iFlytek1234'
+
+if not sta_if.isconnected():#如果没有连接
+  print('connecting to network...')
+  sta_if.connect(ssid_,password_)#连接到指定特定网洛
+  print("s")
+  #while not sta_if.isconnected():
+  print("wifi connect souccess network config:"+str(sta_if.ifconfig()))
+
+MESSAGE = "Hello, World!"
 
 
-TCP
+server_ip = '192.168.4.3'
+server_port = 12345
+tcp_client = socket.socket()
+try:
+  #time.sleep(500)
+  a=tcp_client.connect((server_ip, server_port))
+  print(a)
+  time.sleep_ms(500)
+  #tcp_client.send(MESSAGE)
+except :
+  print('fail to setup socket connection')
+tcp_client.close()
+```
 
-UDP 
+#### MQTT协议通信
 
-MQTT
+参考：<https://github.com/peterhinch/micropython-mqtt>
 
+uqtt
